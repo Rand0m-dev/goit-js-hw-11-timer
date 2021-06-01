@@ -1,29 +1,30 @@
-const ulList = document.querySelector("#timer-1");
-const spanElDays = document.querySelector('.value[data-value="days"]');
-const spanElHours = document.querySelector('.value[data-value="hours"]');
-const spanElMins = document.querySelector('.value[data-value="mins"]');
-const spanElSecs = document.querySelector('.value[data-value="secs"]');
-
 class CountdownTimer {
-  constructor({ targetDate, selector, updateFace }) {
+  constructor({ selector, targetDate } = {}) {
+    this.timeId = null;
+    this.selector = selector;
     this.targetDate = targetDate;
-    this.value = selector;
-    this.updateFace = updateFace;
   }
 
-  updateCount() {
+  createTime() {
     const currentTime = Date.now();
-    const timeToFinish = this.targetDate - currentTime;
-    const time = this.getTimeToTargetDate(timeToFinish);
+    const difference = this.targetDate - currentTime;
+    const timeForCount = this.receiveTime(difference);
+    this.clockFace(timeForCount);
 
-    this.updateFace(time);
+    if (difference < 0) {
+      clearInterval(this.timeId);
+      document.querySelector(".timer-title").textContent = "С Днем Рождения!!!";
+      return;
+    } else {
+      document.querySelector(".timer-title").textContent = "До Дня Рождения:";
+    }
   }
 
-  start() {
-    this.updateCount();
+  startCounting() {
+    this.createTime();
 
-    setInterval(() => {
-      this.updateCount();
+    this.timeId = setInterval(() => {
+      this.createTime();
     }, 1000);
   }
 
@@ -31,28 +32,29 @@ class CountdownTimer {
     return String(value).padStart(2, "0");
   }
 
-  getTimeToTargetDate(time) {
+  clockFace({ days, hours, mins, secs }) {
+    // refs.frontSide.textContent = `${days}:${hours}:${mins}:${secs}`;
+    document.querySelector('[data-value="days"]').textContent = `${days}`;
+    document.querySelector('[data-value="hours"]').textContent = `${hours}`;
+    document.querySelector('[data-value="mins"]').textContent = `${mins}`;
+    document.querySelector('[data-value="secs"]').textContent = `${secs}`;
+  }
+
+  receiveTime(time) {
     const days = this.pad(Math.floor(time / (1000 * 60 * 60 * 24)));
     const hours = this.pad(
       Math.floor((time % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
     );
     const mins = this.pad(Math.floor((time % (1000 * 60 * 60)) / (1000 * 60)));
     const secs = this.pad(Math.floor((time % (1000 * 60)) / 1000));
+
     return { days, hours, mins, secs };
   }
 }
 
-const countdownTimer = new CountdownTimer({
+const forTimer = new CountdownTimer({
   selector: "#timer-1",
-  targetDate: new Date("Augest 07, 2021"),
-  updateFace: updateCountdownTimer,
+  targetDate: new Date("August 7, 2021"),
 });
 
-countdownTimer.start();
-
-function updateCountdownTimer({ days, hours, mins, secs }) {
-  spanElDays.textContent = `${days}`;
-  spanElHours.textContent = `${hours}`;
-  spanElMins.textContent = `${mins}`;
-  spanElSecs.textContent = `${secs}`;
-}
+forTimer.startCounting();
